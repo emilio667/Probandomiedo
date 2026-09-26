@@ -6,9 +6,11 @@ output: html_document
 ---
 
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
+
+
+
+
 #Introduccion del lab
 Una compañía manufacturera tiene tres escuelas de mecánica regionales, una en cada una de sus regiones de operación. Cada escuela tiene dos instructores que dan cursos de tres semanas a 15 mecánicos aproximadamente. La compañía está interesada en conocer el efecto de la escuela (factor A) y el instructor (factor B) en el aprendizaje logrado. Se hace un experimento en el que se forman grupos en cada región y se asigna cada grupo a uno de los instructores. A cada instructor se le asignan dos grupos. Para determinar el efecto de la escuela y el instructor en el aprendizaje, se hace una prueba a los estudiantes y se obtiene el puntaje promedio del grupo como variable respuesta.
 
@@ -153,7 +155,7 @@ model.tables(aov(mod2))
 R/Los efectos están bien estimados y se observa que los efectos de cada par
 de instructores suman cero dentro de cada escuela. Por ejemplo, el efecto del
 instructor 1 es 7.25 y el del instructor 2 es -7.25. Así con el 3 y 4 (-5.75 y 5.75) y con el 5 y 6 (7.5 y -7.5).
-
+cambiogit
 #4. Uso del factor anidado:
 
 Se puede usar el factor anidado con el formato en que aparece instructor, pero
