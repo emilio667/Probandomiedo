@@ -1,0 +1,86 @@
+from datetime import datetime
+
+# 1. FUNCIÓN PARA CREAR LA ESTRUCTURA DE UN PRODUCTO
+def crear_estructura_producto(
+    id_prod: str,
+    nombre: str,
+    precio: float,  # Nota: En producción considera usar decimal.Decimal
+    categoria: str,
+    comercio_id: str,
+    stock: int,
+    atributos: dict  # Patrón de atributos para heterogeneidad
+) -> dict:
+    return {
+        "_id": id_prod,
+        "nombre": nombre,
+        "precio": precio,
+        "categoria": categoria,
+        "comercio_id": comercio_id,
+        "stock": stock,
+        "atributos": atributos,
+    }
+
+# 2. FUNCIÓN PARA CREAR LA ESTRUCTURA DE UN CLIENTE
+def crear_estructura_cliente(
+    id_cliente: str,
+    nombre: str,
+    correo: str,
+    telefono: str,
+    cedula: str,
+    direccion: dict
+) -> dict:
+    return {
+        "_id": id_cliente,
+        "nombre": nombre,
+        "correo": correo,
+        "telefono": telefono,
+        "cedula": cedula,
+        "direccion": direccion,
+    }
+
+# 3. FUNCIÓN PARA CREAR UN PEDIDO (Optimizado con datetime nativo)
+def crear_estructura_pedido(
+    id_pedido: str,
+    cliente_id: str,
+    estado: str,
+    lineas_detalle: list[dict],
+    fecha: datetime = None  # Usa objetos datetime nativos
+) -> dict:
+    if fecha is None:
+        fecha = datetime.utcnow()  # Fecha y hora actual en UTC
+        
+    monto_total = sum(item["subtotal"] for item in lineas_detalle)
+    
+    return {
+        "_id": id_pedido,
+        "fecha": fecha,  # BSON Date en MongoDB
+        "cliente_id": cliente_id,
+        "estado": estado,
+        "monto_total": monto_total,
+        "lineas_detalle": lineas_detalle,
+    }
+
+# ==========================================
+# EJEMPLO DE USO CON DETALLE DE PEDIDO
+# ==========================================
+if __name__ == "__main__":
+    # Creando detalle de compra simulado
+    detalles_pedido = [
+        {
+            "producto_id": "PROD-001",
+            "nombre": "Camiseta Típica",
+            "precio_unitario": 18000.00,
+            "cantidad": 2,
+            "subtotal": 36000.00
+        }
+    ]
+    
+    pedido_prueba = crear_estructura_pedido(
+        id_pedido="PED-5001",
+        cliente_id="CLI-1001",
+        estado="Pendiente",
+        lineas_detalle=detalles_pedido
+    )
+    
+    print("--- Estructura de Pedido Optimizado ---")
+    print(pedido_prueba)
