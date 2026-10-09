@@ -1,0 +1,76 @@
+import json
+from datetime import datetime
+from pymongo import MongoClient
+from faker import Faker
+from modelos import crear_estructura_pedido
+
+fake = Faker("es_ES")
+# Semilla fija para reproducibilidad absoluta
+Faker.seed(42)
+
+uri = "mongodb://localhost:27017/" # Asegúrate de poner tu URI aquí
+client = MongoClient(uri)
+db = client["MercadoTico360"]
+
+# Traemos los IDs de los 10,000 clientes reales
+clientes = list(db.clientes.find({}, {"_id": 1}))
+
+# Traemos la información necesaria de los 25,000 productos reales
+productos = list(db.productos.find({}, {"_id": 1, "nombre": 1, "precio": 1}))
+
+pedidos = []
+
+for i in range(50000):
+    # Usamos el generador aleatorio de Faker para respetar la semilla fija
+    cliente = fake.random_element(clientes)
+    cantidad_lineas = fake.random_int(min=1, max=5)
+    
+    lineas = []
+    # CORRECCIÓN: Usamos un conjunto para evitar productos duplicados en el mismo pedido
+    productos_seleccionados = set()
+
+    while len(lineas) < cantidad_lineas:
+        producto = fake.random_element(productos)
+        
+        # Si el producto ya se agregó a este pedido, lo saltamos para evitar duplicados
+        if producto["_id"] in productos_seleccionados:
+            continue
+            
+        productos_seleccionados.add(producto["_id"])
+        cantidad = fake.random_int(min=1, max=3)
+        
+        # CORRECCIÓN: Redondeo a 2 decimales para evitar errores de coma flotante en dinero
+        subtotal = round(float(producto["precio"]) * cantidad, 2)
+
+        lineas.append({
+            "producto_id": producto["_id"],
+            "nombre_producto": producto["nombre"],
+            "precio_unitario": producto["precio"],
+            "cantidad": cantidad,
+            "subtotal": subtotal
+        })
+
+    # Generamos una fecha nativa datetime dentro del año actual
+    fecha_fake = fake.date_time_this_year()
+
+    pedido = crear_estructura_pedido(
+        id_pedido=f"PED-{i+1:05d}",
+        fecha=fecha_fake, # Se pasa el objeto datetime para que MongoDB lo reconozca nativamente
+        cliente_id=str(cliente["_id"]),
+        estado=fake.random_element([
+            "Pendiente",
+            "Enviado",
+            "Entregado",
+            "Cancelado"
+        ]),
+        lineas_detalle=lineas
+    )
+
+    pedidos.append(pedido)
+
+# Guardamos el archivo JSON listo
+with open("pedidos.json", "w", encoding="utf-8") as archivo:
+    # default=str evita que falle al serializar el objeto datetime a texto en el JSON plano
+    json.dump(pedidos, archivo, ensure_ascii=False, indent=4, default=str)
+
+print(f"Se generaron {len(pedidos)} pedidos exitosamente.")
